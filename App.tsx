@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from 'react'; //useState for tuple assignment like {Dice, setDice}
 
 // TODO: Table UI and use-mobile UI
 
@@ -35,3 +35,9 @@ export default function App(){
         },
     ]);
 }
+
+const [currentPlayerINdex, setCurrentPlayerIndex] = useState(0);
+const [diceValue, setDiceValue] = useState<number | null>(null);
+const [isRolling, setisRolling] = useState(false);
+const [gameStarted, setGameStarted] = useState(false);
+const [winner, setWinner] = useState<Player |null>(null);
