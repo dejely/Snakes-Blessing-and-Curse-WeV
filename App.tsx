@@ -38,6 +38,13 @@ export default function App(){
 
 const [currentPlayerINdex, setCurrentPlayerIndex] = useState(0);
 const [diceValue, setDiceValue] = useState<number | null>(null);
-const [isRolling, setisRolling] = useState(false);
+const [isRolling, setIsRolling] = useState(false);
 const [gameStarted, setGameStarted] = useState(false);
 const [winner, setWinner] = useState<Player |null>(null);
+const [lastEffect, setLastEffect] = useState<SpecialTile  | null>(null);
+const [showEffect, setShowEffect] = useState(false);
+
+const [SpecialTiles] = useState<SpecialTile[]>([
+    {from:, to: , type: , description:, revealed: },
+    
+]);
