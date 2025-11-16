@@ -24,18 +24,19 @@ export interface SpecialTile{
 export default function App(){
     const [players, setPlayers] = useState<Player[]>([
         {id : 1,
-            name: String,
+            name: "",
             position: 0,
             color: '#8b5cf6'
         },
         {id: 2,
-            name: String,
+            name: "",
             position: 0,
             color: '#ef4444'
         },
     ]);
 }
 
+//Set consts 
 const [currentPlayerINdex, setCurrentPlayerIndex] = useState(0);
 const [diceValue, setDiceValue] = useState<number | null>(null);
 const [isRolling, setIsRolling] = useState(false);
@@ -45,6 +46,8 @@ const [lastEffect, setLastEffect] = useState<SpecialTile  | null>(null);
 const [showEffect, setShowEffect] = useState(false);
 
 const [SpecialTiles] = useState<SpecialTile[]>([
+    //Manually add tiles(vine,snake,boon,curse)?
     {from:, to: , type: , description:, revealed: },
     
 ]);
+
