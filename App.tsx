@@ -1,52 +1,40 @@
-import { useState } from 'react'; //useState for tuple assignment like {Dice, setDice}
+import { useState } from 'react';
+import { GameBoard } from './components/GameBoard';
+import { DiceRoller } from './components/DiceRoller';
+import { GameInfo } from './components/GameInfo';
+import { TileEffect } from './components/TileEffect';
 
-// TODO: Table UI and use-mobile UI
-
-export interface Player{
-
-    //OOP  -> equivalent to this.*variable_name* in java
-
-
-    id: number;
-    name: string;
-    position: number;
-    color: string;
+export interface Player {
+  id: number;
+  name: string;
+  position: number;
+  color: string;
 }
 
-export interface SpecialTile{
-    from: number;
-    to: number;
-    type: 'snake' | 'vine' | 'curse' | 'boon';
-    description: string;
-    revealed: boolean;
+export interface SpecialTile {
+  from: number;
+  to: number;
+  type: 'snake' | 'vine' | 'curse' | 'boon';
+  description: string;
+  revealed: boolean;
 }
 
-export default function App(){
-    const [players, setPlayers] = useState<Player[]>([
-        {id : 1,
-            name: "",
-            position: 0,
-            color: '#8b5cf6'
-        },
-        {id: 2,
-            name: "",
-            position: 0,
-            color: '#ef4444'
-        },
-    ]);
-}
+export default function App() {
+  const [players, setPlayers] = useState<Player[]>([
+    { id: 1, name: 'Explorer 1', position: 0, color: '#8b5cf6' },
+    { id: 2, name: 'Explorer 2', position: 0, color: '#ef4444' },
+  ]);
+  
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [diceValue, setDiceValue] = useState<number | null>(null);
+  const [isRolling, setIsRolling] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [winner, setWinner] = useState<Player | null>(null);
+  const [lastEffect, setLastEffect] = useState<SpecialTile | null>(null);
+  const [showEffect, setShowEffect] = useState(false);
 
-//Set consts 
-const [currentPlayerINdex, setCurrentPlayerIndex] = useState(0);
-const [diceValue, setDiceValue] = useState<number | null>(null);
-const [isRolling, setIsRolling] = useState(false);
-const [gameStarted, setGameStarted] = useState(false);
-const [winner, setWinner] = useState<Player |null>(null);
-const [lastEffect, setLastEffect] = useState<SpecialTile  | null>(null);
-const [showEffect, setShowEffect] = useState(false);
-
-const [SpecialTiles] = useState<SpecialTile[]>([
-    //Manually add tiles(vine,snake,boon,curse)?
+  // Special tiles with ambiguous appearances and effects
+  const [specialTiles] = useState<SpecialTile[]>([
     { from: 4, to: 14, type: 'vine', description: 'Ancient vines lift you upward!', revealed: false },
     { from: 9, to: 31, type: 'vine', description: 'Mysterious tendrils carry you forth!', revealed: false },
     { from: 20, to: 42, type: 'vine', description: 'A boon disguised as peril!', revealed: false },
@@ -74,13 +62,148 @@ const [SpecialTiles] = useState<SpecialTile[]>([
     { from: 76, to: 76, type: 'curse', description: 'Limbo\'s grip tightens! Lose a turn!', revealed: false },
   ]);
 
-const handleRollDice = () => { //Map func to algo
+  const handleRollDice = () => {
     if (isRolling || winner) return;
-
+    
     if (!gameStarted) setGameStarted(true);
+    
     setIsRolling(true);
     setDiceValue(null);
-
     
+    // Animate dice rolling
+    const rollInterval = setInterval(() => {
+      setDiceValue(Math.floor(Math.random() * 6) + 1);
+    }, 100);
+    
+    setTimeout(() => {
+      clearInterval(rollInterval);
+      const finalValue = Math.floor(Math.random() * 6) + 1;
+      setDiceValue(finalValue);
+      setIsRolling(false);
+      movePlayer(finalValue);
+    }, 1000);
+  };
 
+  const movePlayer = (steps: number) => {
+    setPlayers(prevPlayers => {
+      const newPlayers = [...prevPlayers];
+      const currentPlayer = newPlayers[currentPlayerIndex];
+      let newPosition = currentPlayer.position + steps;
+      
+      // Check if player reaches or exceeds 100
+      if (newPosition >= 100) {
+        newPosition = 100;
+        currentPlayer.position = newPosition;
+        setWinner(currentPlayer);
+        return newPlayers;
+      }
+      
+      currentPlayer.position = newPosition;
+      
+      // Check for special tiles
+      setTimeout(() => {
+        const specialTile = specialTiles.find(tile => tile.from === newPosition);
+        if (specialTile) {
+          specialTile.revealed = true;
+          setLastEffect(specialTile);
+          setShowEffect(true);
+          
+          setTimeout(() => {
+            setPlayers(p => {
+              const updated = [...p];
+              updated[currentPlayerIndex].position = specialTile.to;
+              
+              // Check if reached 100 after special tile
+              if (specialTile.to >= 100) {
+                updated[currentPlayerIndex].position = 100;
+                setWinner(updated[currentPlayerIndex]);
+              }
+              
+              return updated;
+            });
+            
+            setTimeout(() => {
+              setShowEffect(false);
+              nextTurn();
+            }, 2000);
+          }, 1500);
+        } else {
+          setTimeout(() => nextTurn(), 1000);
+        }
+      }, 500);
+      
+      return newPlayers;
+    });
+  };
+
+  const nextTurn = () => {
+    if (winner) return;
+    setCurrentPlayerIndex(prev => (prev + 1) % players.length);
+    setDiceValue(null);
+  };
+
+  const resetGame = () => {
+    setPlayers(prev => prev.map(p => ({ ...p, position: 0 })));
+    setCurrentPlayerIndex(0);
+    setDiceValue(null);
+    setGameStarted(false);
+    setWinner(null);
+    setLastEffect(null);
+    setShowEffect(false);
+    specialTiles.forEach(tile => tile.revealed = false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 text-slate-100 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <header className="text-center mb-8">
+          <h1 className="text-purple-400 mb-2 tracking-wider">LIMBO'S CHALLENGE</h1>
+          <p className="text-slate-400 max-w-2xl mx-auto">
+            Traverse the wretched underworld where vines and serpents blur, 
+            and mysterious forces shape your fate with every roll...
+          </p>
+        </header>
+
+        <div className="grid lg:grid-cols-[1fr_320px] gap-8">
+          <div className="space-y-6">
+            <GameBoard 
+              players={players} 
+              specialTiles={specialTiles}
+              currentPlayerIndex={currentPlayerIndex}
+            />
+          </div>
+
+          <div className="space-y-6">
+            <GameInfo 
+              players={players}
+              currentPlayerIndex={currentPlayerIndex}
+              winner={winner}
+              gameStarted={gameStarted}
+            />
+            
+            <DiceRoller
+              diceValue={diceValue}
+              isRolling={isRolling}
+              onRoll={handleRollDice}
+              disabled={isRolling || !!winner}
+              currentPlayer={players[currentPlayerIndex]}
+            />
+
+            {winner && (
+              <button
+                onClick={resetGame}
+                className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                Play Again
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {showEffect && lastEffect && (
+        <TileEffect effect={lastEffect} />
+      )}
+    </div>
+  );
 }
