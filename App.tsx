@@ -81,6 +81,41 @@ const handleRollDice = () => { //Map func to algo
     setIsRolling(true);
     setDiceValue(null);
 
+    //Animation for dice rolling
+    const rollInterval = setInterval(() =>{
+    setDiceValue(Math.floor(Math.random() * 6) + 1);
+    }, 100);
+
+    setTimeout(() => {
+        clearInterval(rollInterval);
+        const finalValue = Math.floor(Math.random() * 6) + 1;
+        setDiceValue(finalValue);
+        setIsRolling(false);
+        movePlayer(finalValue);
+    });
+
+    const movePlayer = (steps: number) => {
+        setPlayers(prevPlayers => {
+            const newPlayers = [...prevPlayers];
+            const currentPlayer = newPlayers[currentPlayerINdex];
+            let newPosition = currentPlayer.position + steps;
+
+            //check if player reaches or exceed 100
+            if (newPosition >= 100){
+                newPosition = 100;
+                currentPlayer.position = newPosition;
+                setWinner(currentPlayer);
+                return newPlayers;
+            }
+
+            currentPlayer.position = newPosition;
+
+            //Check for special tiles
+
+            
+        })
+    }
+
     
 
 }
