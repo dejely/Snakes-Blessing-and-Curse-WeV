@@ -51,3 +51,13 @@ const [SpecialTiles] = useState<SpecialTile[]>([
     
 ]);
 
+const handleRollDice = () => { //Map func to algo
+    if (isRolling || winner) return;
+
+    if (!gameStarted) setGameStarted(true);
+    setIsRolling(true);
+    setDiceValue(null);
+
+    
+
+}
